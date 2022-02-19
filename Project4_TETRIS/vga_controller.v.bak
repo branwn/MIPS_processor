@@ -1,0 +1,346 @@
+module vga_controller(iRST_n,
+                      iVGA_CLK,
+                      oBLANK_n,
+                      oHS,
+                      oVS,
+                      b_data,
+                      g_data,
+                      r_data,
+							 vga_data,
+							 vga_addr,
+							 write_clk,
+							 block_wren,
+							 inscore,
+							 enscore);
+
+////////////////////input & output	
+input iRST_n;
+input iVGA_CLK;
+input block_wren;
+input [3:0] vga_data;
+input [7:0] vga_addr;
+input write_clk;
+input [31:0] inscore;
+input enscore;
+output reg oBLANK_n;
+output reg oHS;
+output reg oVS;
+output [7:0] b_data;
+output [7:0] g_data;  
+output [7:0] r_data;                        
+////////////////////reg & wire
+reg [7:0] block_index;
+reg [3:0] block_data[202:0];                
+reg [18:0] ADDR;
+reg [23:0] bgr_data;
+wire [23:0] bgr_data_raw;
+wire cBLANK_n,cHS,cVS,rst;
+wire [3:0]qout;
+wire VGA_CLK_n;
+///////////////////
+assign rst = ~iRST_n;
+assign VGA_CLK_n = ~iVGA_CLK;
+assign index = 8'd0;
+video_sync_generator LTM_ins (.vga_clk(iVGA_CLK),
+                              .reset(rst),
+                              .blank_n(cBLANK_n),
+                              .HS(cHS),
+                              .VS(cVS));
+////Addresss generator
+always@(posedge iVGA_CLK,negedge iRST_n)
+begin
+  if (!iRST_n)
+     ADDR=19'd0;
+  else if (cHS==1'b0 && cVS==1'b0)
+     ADDR=19'd0;
+  else if (cBLANK_n==1'b1) begin
+     ADDR=ADDR+19'd1;
+  end
+end
+always@(posedge VGA_CLK_n) begin
+  block_data[block_index] = qout;
+  if (block_index == 8'd202)
+	  block_index = 8'd0;
+  else
+     block_index = block_index + 8'd1;
+end
+//////////////////////////
+blocks block_ram(
+	.data (vga_data[3:0]),
+	.rdaddress (block_index),
+	.rdclock (VGA_CLK_n),
+	.wraddress (vga_addr[7:0]),
+	.wrclock (write_clk),
+	.wren (block_wren),
+	.q (qout)
+);
+score_store score_storer(
+	.d(inscore), 
+	.q(oscore),
+	.reset(iRST_n), 
+	.wren(enscore), 
+	.clk(write_clk)
+);
+//////////////index changes
+integer actualX, actualY, relativeX, relativeY, xInside, yInside, boxLeft, boxTop, boxInsideX, boxInsideY, digit;
+localparam upboader = 40;
+localparam downboader = 440;
+localparam leftboader = 350;
+localparam rightboader = 550;
+localparam scoreUp = 100;
+localparam scoreDown = 400;
+localparam scoreLeft = 100;
+localparam scoreRight = 200;
+
+
+// leaderboard
+reg [20:0] LeaderboardFirst;
+reg [20:0] LeaderboardSecond;
+reg [20:0] LeaderboardThird;
+reg [20:0] thisPlayerRanking;
+reg [20:0] thisDecimal;
+localparam  my_score_colour = 8'd0;
+localparam  first_colour = 8'd4;
+localparam  second_colour = 8'd3;
+localparam  third_colour = 8'd2;
+reg [7:0] current_colour;
+reg [7:0] current_bg_colour;
+reg [7:0] input_index;
+
+
+wire [20:0] score;
+wire [31:0] oscore;
+///////////////////////////////
+assign score = oscore[20:0];
+
+initial begin
+	LeaderboardFirst <= 21'd0;
+	LeaderboardSecond <= 21'd0;
+	LeaderboardThird <= 21'd0;
+	thisPlayerRanking <= 21'd4;
+end
+
+always@(negedge VGA_CLK_n) begin
+	actualX = ADDR % 19'd640;
+	actualY = ADDR / 19'd640;
+	
+	if (actualX >= leftboader - 5 && actualX < rightboader + 5 && actualY >= upboader - 5 && actualY < downboader + 5) begin
+		if ((actualX < leftboader) || (actualX >= rightboader) || (actualY < upboader) || (actualY >= downboader)) begin
+		// display left and right boarder
+			input_index = 8'd8;
+		end
+	
+		else begin
+			// refresh game board
+			xInside = (actualX - leftboader) % 20;
+			yInside = (actualY - upboader) % 20;
+			relativeX = (actualX - leftboader) / 20 + 2;
+			relativeY = (actualY - upboader) / 20;
+			case(block_data[relativeX + relativeY*10])
+				0: input_index = index;
+				1: input_index = 8'd1;
+				2: input_index = 8'd2;
+				3: input_index = 8'd3;
+				4: input_index = 8'd4;
+				5: input_index = 8'd5;
+				6: input_index = 8'd6;
+				default: input_index = 8'd8;
+			endcase
+		end	
+		
+	end else if (actualX >= scoreLeft && actualX < scoreRight && actualY >= scoreUp && actualY < scoreDown) begin
+
+		
+  ////////////////////////////////////////////calculate axis//////////////////////////////////
+ 
+  relativeX = ((actualX - scoreLeft) / 35);
+  relativeY = ((actualY - scoreUp) / 75);
+
+  
+  boxLeft = scoreLeft + relativeX * 35;
+  boxTop = scoreUp + relativeY * 75;
+  boxInsideX = (actualX - boxLeft);
+  boxInsideY = (actualY - boxTop);
+
+		
+		
+  ////////////////////////////////////////////calculate board//////////////////////////////////
+  
+	  if (relativeY == 0) begin // display this player's score
+		thisDecimal = score;
+		current_colour = 8'd0;
+		current_bg_colour = 8'd8;
+		// calculate leaderboard
+		
+		
+		
+		// 4
+		if (LeaderboardThird >= score) begin
+			thisPlayerRanking = 4;
+			
+			
+		// 1	
+		end else if (score >= LeaderboardFirst ) begin
+			if (thisPlayerRanking == 1) begin
+					LeaderboardFirst = score;
+			end else begin
+				  LeaderboardSecond = LeaderboardFirst;
+				  LeaderboardFirst = score;
+				  thisPlayerRanking = 1;
+			end
+		
+		// 2	
+		end else if (score >= LeaderboardSecond) begin
+			if (thisPlayerRanking == 2) begin
+				LeaderboardSecond = score;
+			end else begin
+				  LeaderboardThird = LeaderboardSecond;
+				  LeaderboardSecond = score;
+				  thisPlayerRanking = 2;
+			end
+			
+		// 3	
+		end else if (score >= LeaderboardThird) begin
+			if (thisPlayerRanking == 3) begin
+				LeaderboardThird = score;
+			end else begin
+				  LeaderboardThird = score;
+				  thisPlayerRanking = 3;
+			end
+			
+
+			
+
+		end
+		
+		
+	  end else if (relativeY == 1) begin // is the Leader board first
+			thisDecimal = LeaderboardFirst;
+			current_colour = first_colour;
+			current_bg_colour = index;
+		
+	  end else if (relativeY == 2) begin // is the Leader board second
+			thisDecimal = LeaderboardSecond;
+			current_colour = second_colour;
+			current_bg_colour = index;
+	  
+	  end else if (relativeY == 3) begin // is the Leader board third
+			thisDecimal = LeaderboardThird;
+			current_colour = third_colour;
+			current_bg_colour = index;
+		
+	  end 
+		
+		
+		
+		////////////////////////////////////////////calculate digits//////////////////////////////////
+  
+	  if (relativeX == 0) begin 
+			digit = (thisDecimal / 100) % 10;
+	  end else if (relativeX == 1) begin
+			digit = (thisDecimal / 10) % 10;
+	  end else if (relativeX == 2) begin
+			digit = (thisDecimal) % 10;
+	  end
+     
+	  
+	  
+	  
+	  
+	  ////////////////////////////////////////////display 7-segments//////////////////////////////////
+	  
+	  if (relativeY == 0 && boxInsideY > 55) begin
+				input_index = current_colour;
+			end 
+	  // segment A
+	  else if ((boxInsideX > 5 && boxInsideX < 25) && (boxInsideY > 0 && boxInsideY < 5)) begin
+		if (digit == 1 || digit == 4) begin
+		 input_index = current_bg_colour;
+		end else begin
+		 input_index = current_colour;
+		end   
+	  end
+	  // segment B
+	  else if ((boxInsideX > 25 && boxInsideX < 30) && (boxInsideY > 5 && boxInsideY < 25 )) begin
+		if (digit == 5 || digit == 6) begin
+		 input_index = current_bg_colour;
+		end else begin
+		 input_index = current_colour;
+		end
+	  end
+	  // segment C
+	  else if ((boxInsideX > 25 && boxInsideX < 30) &&  (boxInsideY > 30 && boxInsideY < 50))begin
+		if (digit == 2) begin
+		 input_index = current_bg_colour;
+		end else begin
+		 input_index = current_colour;
+		end
+	  end
+	  // segment D
+	  else if ((boxInsideX > 5 && boxInsideX < 25) && (boxInsideY > 50 && boxInsideY < 55)) begin
+		if (digit == 1 || digit == 7 || digit == 4) begin
+		 input_index = current_bg_colour;
+		end else begin
+		 input_index = current_colour;
+		end
+	  end
+	  // segment E
+	  else if ((boxInsideX > 0 && boxInsideX < 5) && (boxInsideY > 30 && boxInsideY < 50 )) begin
+		if (digit == 0 || digit == 2 || digit == 6 || digit == 8) begin
+		 input_index = current_colour;
+		end else begin
+		 input_index = current_bg_colour;
+		end
+	  end
+	  // segment F
+	  else if ((boxInsideX > 0 && boxInsideX < 5) && (boxInsideY > 5 && boxInsideY < 25 )) begin
+		if (digit == 1 || digit == 2 || digit == 3 || digit == 7 ) begin
+		 input_index = current_bg_colour;
+		end else begin
+		 input_index = current_colour;
+		end
+	  end
+	  // segment G
+	  else if ((boxInsideX > 5 && boxInsideX < 25) && (boxInsideY > 25 && boxInsideY < 30)) begin
+		if (digit == 0 || digit == 1 || digit == 7) begin
+		 input_index = current_bg_colour;
+		end else begin
+		 input_index = current_colour;
+		end
+	  end
+	  else begin
+			
+			
+			
+			input_index = current_bg_colour; 
+			
+	  end
+				
+	
+	end else begin
+		input_index = index;
+	end
+end
+//////Color table output
+img_index	img_index_inst (
+	.address ( input_index ),
+	.clock ( iVGA_CLK ),
+	.q ( bgr_data_raw)
+	);	
+//////
+//////latch valid data at falling edge;
+always@(posedge VGA_CLK_n) 
+	bgr_data <= bgr_data_raw;
+assign b_data = bgr_data[23:16];
+assign g_data = bgr_data[15:8];
+assign r_data = bgr_data[7:0]; 
+///////////////////
+//////Delay the iHD, iVD,iDEN for one clock cycle;
+always@(negedge iVGA_CLK)
+begin
+  oHS<=cHS;
+  oVS<=cVS;
+  oBLANK_n<=cBLANK_n;
+end
+
+endmodule

@@ -1,0 +1,19 @@
+module imme_controller(
+    input [31:0] S2,
+    input [16:0] immediate,
+    input imme_enable,
+
+    output [31:0] N_pc,
+    output [31:0] ALU_B,
+    output [31:0] dmem2
+);
+
+
+wire [31:0] sx_out;
+assign sx_out [16:0] = immediate [16:0];
+assign sx_out [31:17] = (immediate [16] == 1) ? 15'b1 : 15'b0;
+
+assign ALU_B = (Imme_en == 1'b0) ? S2 : sx_out;
+assign dmem2 = S2;
+
+endmodule

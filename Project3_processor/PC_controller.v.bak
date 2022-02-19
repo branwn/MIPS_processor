@@ -1,0 +1,16 @@
+module PC_controller(
+    input [26:0] T,
+    input [31:0] N,
+    input [31:0] rd,
+    input [2:0] PC_selector,
+    input ilt,
+    input neq,
+    input int_neq_selector,
+    input excep_T,
+
+    inout [31:0] PC_plus_1,
+
+    output [31:0] new_PC,
+);
+
+endmodule

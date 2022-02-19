@@ -1,0 +1,7 @@
+
+State Machine - |skeleton|vga_controller:vga|thisPlayerRanking
+Name thisPlayerRanking.000000000000000000011 thisPlayerRanking.000000000000000000010 thisPlayerRanking.000000000000000000001 thisPlayerRanking.000000000000000000100 
+thisPlayerRanking.000000000000000000001 0 0 0 0 
+thisPlayerRanking.000000000000000000010 0 1 1 0 
+thisPlayerRanking.000000000000000000011 1 0 1 0 
+thisPlayerRanking.000000000000000000100 0 0 1 1 

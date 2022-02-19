@@ -1,0 +1,130 @@
+m255
+K4
+z2
+13
+!s112 1.1
+!i10d 8192
+!i10e 25
+!i10f 100
+cModel Technology
+Z0 dZ:/Documents/Duke University/ECE550DK/Projects/Project3_processor/simulation/qsim
+vskeleton
+!s110 1635833905
+!i10b 1
+!s100 ZXEdLU?OAafmSD=Bjl47^3
+IZHKDJ1MTMafBf>z>CQe1:2
+Z1 VDg1SIo80bB@j0V0VzS_@n1
+R0
+w1635833904
+Z2 8skeleton.vo
+Z3 Fskeleton.vo
+Z4 L0 32
+Z5 OV;L;10.4d;61
+r1
+!s85 0
+31
+!s108 1635833905.000000
+Z6 !s107 skeleton.vo|
+Z7 !s90 -work|work|skeleton.vo|
+!i113 1
+Z8 o-work work
+vskeleton_test
+Z9 !s110 1635831355
+!i10b 1
+!s100 NA;_MPEVPf?3K>MeQ<;G[3
+IMJD165L1oYEhhcm13ChNE3
+R1
+R0
+w1635831352
+R2
+R3
+R4
+R5
+r1
+!s85 0
+31
+!s108 1635831353.000000
+R6
+R7
+!i113 1
+R8
+vskeleton_test2
+!s110 1635871598
+!i10b 1
+!s100 :JeME6WK@<@6YMO48<l6J0
+Ic8]H1`YkHe1V?gC3l?`TY3
+R1
+R0
+w1635871595
+R2
+R3
+R4
+R5
+r1
+!s85 0
+31
+!s108 1635871597.000000
+R6
+R7
+!i113 1
+R8
+vskeleton_test2_vlg_vec_tst
+!s110 1635871599
+!i10b 1
+!s100 MI2KK1abb2XH_Enn_WR0]3
+IS1?DCafOLZKgo<mfleIDd2
+R1
+R0
+w1635871589
+Z10 8Waveform.vwf.vt
+Z11 FWaveform.vwf.vt
+Z12 L0 30
+R5
+r1
+!s85 0
+31
+!s108 1635871598.000000
+!s107 Waveform.vwf.vt|
+Z13 !s90 -work|work|Waveform.vwf.vt|
+!i113 1
+R8
+vskeleton_test_vlg_vec_tst
+R9
+!i10b 1
+!s100 QIh5Kfc:RD2Se^gR<MzEI3
+I>=SdeZY>oNnOX156g47NX2
+R1
+R0
+w1635831346
+R10
+R11
+R12
+R5
+r1
+!s85 0
+31
+!s108 1635831355.000000
+!s107 Waveform.vwf.vt|
+R13
+!i113 1
+R8
+vskeleton_vlg_vec_tst
+!s110 1635833906
+!i10b 1
+!s100 D^eG5gE?BZ>nBUO1IGfB32
+I;z>Qa7QjhXgZ_j5[WVKPM2
+R1
+R0
+w1635833899
+R10
+R11
+R12
+R5
+r1
+!s85 0
+31
+!s108 1635833906.000000
+!s107 Waveform.vwf.vt|
+R13
+!i113 1
+R8
